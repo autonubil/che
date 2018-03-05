@@ -97,11 +97,14 @@ public class KubernetesServerResolver {
   private void fillIngressServers(Ingress ingress, Map<String, ServerImpl> servers) {
     IngressRule ingressRule = ingress.getSpec().getRules().get(0);
 
-    // host either set by rule, or determined by LB ip
+    // Prefer Rule annotated hostname, if none given use  LoadBalancer's Hostname (i.E. AWS ELB) or
+    // IP
     final String host =
         ingressRule.getHost() != null
             ? ingressRule.getHost()
-            : ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp();
+            : ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname() != null
+                ? ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname()
+                : ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp();
 
     Annotations.newDeserializer(ingress.getMetadata().getAnnotations())
         .servers()
@@ -137,6 +140,12 @@ public class KubernetesServerResolver {
       String protocol, String host, String port, String path, Map<String, String> attributes) {
     StringBuilder ub = new StringBuilder();
     if (protocol != null) {
+      // upgrade?
+      if ("http".equals(protocol)) {
+        protocol = "https";
+      } else if ("ws".equals(protocol)) {
+        protocol = "wss";
+      }
       ub.append(protocol).append("://");
     } else {
       ub.append("tcp://");
