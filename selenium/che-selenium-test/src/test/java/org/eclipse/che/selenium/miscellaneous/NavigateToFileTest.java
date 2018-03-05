@@ -35,7 +35,6 @@ import org.eclipse.che.selenium.pageobject.Menu;
 import org.eclipse.che.selenium.pageobject.NavigateToFile;
 import org.eclipse.che.selenium.pageobject.ProjectExplorer;
 import org.eclipse.che.selenium.pageobject.intelligent.CommandsPalette;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriverException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -124,15 +123,7 @@ public class NavigateToFileTest {
   public void shouldDisplayFilesFoundByMask(
       String inputValueForChecking, Map<Integer, String> expectedValues) {
     launchNavigateToFileFromUIAndTypeValue(inputValueForChecking);
-
-    try {
-      // check that suggestion list visible
-      navigateToFile.waitSuggestedPanel();
-    } catch (TimeoutException ex) {
-      // remove try-catch block after issue has been resolved
-      fail("Known issue https://github.com/eclipse/che/issues/8735");
-    }
-
+    navigateToFile.waitSuggestedPanel();
     waitExpectedItemsInNavigateToFileDropdown(expectedValues);
     navigateToFile.closeNavigateToFileForm();
     navigateToFile.waitFormToClose();
@@ -171,7 +162,7 @@ public class NavigateToFileTest {
       navigateToFile.selectFileByName(dropdownVerificationPath);
     } catch (WebDriverException ex) {
       // remove try-catch block after issue has been resolved
-      fail("Known issue https://github.com/eclipse/che/issues/8465");
+      fail("Known issue https://github.com/eclipse/che/issues/8465", ex);
     }
 
     editor.waitActive();
@@ -249,14 +240,14 @@ public class NavigateToFileTest {
       {
         "we?.xml",
         ImmutableMap.of(
-            1, "web.xml (/NavigateFile)",
-            2, "web.xml (/NavigateFile_2)")
+            1, "web.xml (/NavigateFile/src/main/webapp/WEB-INF)",
+            2, "web.xml (/NavigateFile_2/src/main/webapp/WEB-INF)")
       },
       {
         "gu?ss_n?m.j?p",
         ImmutableMap.of(
-            1, "web.xml (/NavigateFile)",
-            2, "web.xml (/NavigateFile_2)")
+            1, "guess_num.jsp (/NavigateFile/src/main/webapp/WEB-INF/jsp)",
+            2, "guess_num.jsp (/NavigateFile_2/src/main/webapp/WEB-INF/jsp)")
       }
     };
   }
