@@ -362,7 +362,19 @@ public class KubernetesServerExposer<T extends KubernetesEnvironment> {
 
       HTTPIngressRuleValue httpIngressRuleValue =
           new HTTPIngressRuleValueBuilder().withPaths(httpIngressPath).build();
-      IngressRule ingressRule = new IngressRuleBuilder().withHttp(httpIngressRuleValue).build();
+
+      IngressRule ingressRule;
+      // host name annotation in annotations?
+      if (annotations.containsKey(Annotations.HOST_NAME_ANNOTATION)) {
+        ingressRule =
+            new IngressRuleBuilder()
+                .withHost(annotations.get(Annotations.HOST_NAME_ANNOTATION))
+                .withHttp(httpIngressRuleValue)
+                .build();
+      } else {
+        ingressRule = new IngressRuleBuilder().withHttp(httpIngressRuleValue).build();
+      }
+
       IngressSpec ingressSpec = new IngressSpecBuilder().withRules(ingressRule).build();
 
       Map<String, String> ingressAnnotations = new HashMap<>(annotations);
