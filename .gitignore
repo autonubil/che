@@ -17,6 +17,8 @@ maven-eclipse.xml
 *.iws
 .idea/
 
+.vscode/
+
 # Compiled source #
 ###################
 !*.com/
@@ -74,3 +76,8 @@ docs/assets/imgs
 ##################
 plugins/plugin-terminal-ui/node_modules/
 plugins/plugin-terminal-ui/build/
+
+# IDEs
+.metadata/
+.recommenders/
+
