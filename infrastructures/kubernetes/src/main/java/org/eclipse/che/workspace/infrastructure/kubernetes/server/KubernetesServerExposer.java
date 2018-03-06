@@ -36,6 +36,8 @@ import io.fabric8.kubernetes.api.model.extensions.IngressRule;
 import io.fabric8.kubernetes.api.model.extensions.IngressRuleBuilder;
 import io.fabric8.kubernetes.api.model.extensions.IngressSpec;
 import io.fabric8.kubernetes.api.model.extensions.IngressSpecBuilder;
+import io.fabric8.kubernetes.api.model.extensions.IngressTLS;
+import io.fabric8.kubernetes.api.model.extensions.IngressTLSBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -363,19 +365,30 @@ public class KubernetesServerExposer<T extends KubernetesEnvironment> {
       HTTPIngressRuleValue httpIngressRuleValue =
           new HTTPIngressRuleValueBuilder().withPaths(httpIngressPath).build();
 
-      IngressRule ingressRule;
-      // host name annotation in annotations?
-      if (annotations.containsKey(Annotations.HOST_NAME_ANNOTATION)) {
-        ingressRule =
-            new IngressRuleBuilder()
-                .withHost(annotations.get(Annotations.HOST_NAME_ANNOTATION))
-                .withHttp(httpIngressRuleValue)
-                .build();
-      } else {
-        ingressRule = new IngressRuleBuilder().withHttp(httpIngressRuleValue).build();
+      for (String annotationKey : this.annotations.keySet()) {
+        LOG.warn(String.format(" %s: %s", annotationKey, this.annotations.get(annotationKey)));
       }
 
-      IngressSpec ingressSpec = new IngressSpecBuilder().withRules(ingressRule).build();
+      IngressTLS ingressTls = null;
+      // host name annotation in annotations?
+      IngressRuleBuilder ingressRuleBuilder =
+          new IngressRuleBuilder().withHttp(httpIngressRuleValue);
+      if (this.annotations.containsKey(Annotations.HOST_NAME_ANNOTATION)) {
+        LOG.warn("Using Hostname: " + this.annotations.get(Annotations.HOST_NAME_ANNOTATION));
+        ingressRuleBuilder.withHost(this.annotations.get(Annotations.HOST_NAME_ANNOTATION));
+        if (this.annotations.containsKey(Annotations.SECRET_NAME_ANNOTATION)) {
+          LOG.warn("Using secretname: " + this.annotations.get(Annotations.SECRET_NAME_ANNOTATION));
+          ingressTls =
+              new IngressTLSBuilder()
+                  .withHosts(this.annotations.get(Annotations.HOST_NAME_ANNOTATION))
+                  .withSecretName(this.annotations.get(Annotations.SECRET_NAME_ANNOTATION))
+                  .build();
+        }
+      }
+      IngressRule ingressRule = ingressRuleBuilder.build();
+
+      IngressSpec ingressSpec =
+          new IngressSpecBuilder().withRules(ingressRule).withTls(ingressTls).build();
 
       Map<String, String> ingressAnnotations = new HashMap<>(annotations);
       ingressAnnotations.putAll(

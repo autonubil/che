@@ -40,6 +40,9 @@ public class Annotations {
   public static final String MACHINE_NAME_ANNOTATION = ANNOTATION_PREFIX + "machine.name";
 
   public static final String HOST_NAME_ANNOTATION = ANNOTATION_PREFIX + "machine.hostname";
+  public static final String SECRET_NAME_ANNOTATION = ANNOTATION_PREFIX + "machine.secretname";
+
+  public static final String FORCE_TLS_ANNOTATION = ANNOTATION_PREFIX + "machine.force_tls";
 
   /** Pattern that matches server annotations e.g. "org.eclipse.che.server.exec-agent.port". */
   private static final Pattern SERVER_ANNOTATION_PATTERN =
@@ -100,6 +103,16 @@ public class Annotations {
       return this;
     }
 
+    public Serializer secretName(String secretName) {
+      annotations.put(SECRET_NAME_ANNOTATION, secretName);
+      return this;
+    }
+
+    public Serializer foreTls(Boolean forceTls) {
+      annotations.put(FORCE_TLS_ANNOTATION, forceTls.toString());
+      return this;
+    }
+
     public Map<String, String> annotations() {
       return annotations;
     }
@@ -140,8 +153,16 @@ public class Annotations {
       return annotations.get(MACHINE_NAME_ANNOTATION);
     }
 
+    public Boolean forceTls() {
+      return Boolean.parseBoolean(annotations.get(FORCE_TLS_ANNOTATION));
+    }
+
     public String hostName() {
       return annotations.get(HOST_NAME_ANNOTATION);
+    }
+
+    public String secretName() {
+      return annotations.get(SECRET_NAME_ANNOTATION);
     }
   }
 

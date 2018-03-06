@@ -15,10 +15,13 @@ import static org.eclipse.che.workspace.infrastructure.kubernetes.Constants.MACH
 
 import com.google.common.collect.ImmutableMap;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
+import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.inject.Singleton;
 import org.eclipse.che.api.workspace.server.spi.InfrastructureException;
@@ -50,6 +53,9 @@ public class DockerImageEnvironmentConverter {
     final Map<String, String> annotations = new HashMap<>();
     annotations.put(format(MACHINE_NAME_ANNOTATION_FMT, CONTAINER_NAME), machineName);
 
+    List<LocalObjectReference> imagePullSecrets = new ArrayList<>();
+    imagePullSecrets.add(new LocalObjectReference("gitlab-registry"));
+
     final Pod pod =
         new PodBuilder()
             .withNewMetadata()
@@ -59,6 +65,7 @@ public class DockerImageEnvironmentConverter {
             .withNewSpec()
             .withContainers(
                 new ContainerBuilder().withImage(dockerImage).withName(CONTAINER_NAME).build())
+            .withImagePullSecrets(imagePullSecrets)
             .endSpec()
             .build();
     return KubernetesEnvironment.builder()
